@@ -94,6 +94,19 @@ function DashboardPage() {
 }
 
 function PendingApprovalNotice() {
+  const qc = useQueryClient();
+  const router = useRouter();
+  const claim = useServerFn(claimSuperAdmin);
+  const onClaim = async () => {
+    try {
+      await claim();
+      toast.success("You are now Super Admin — welcome!");
+      await qc.invalidateQueries();
+      router.invalidate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not claim workspace");
+    }
+  };
   return (
     <Card className="glass max-w-2xl mx-auto animate-scale-in shadow-elegant">
       <CardHeader className="text-center">
@@ -105,8 +118,16 @@ function PendingApprovalNotice() {
           Your application is with the CoLab Nation team. You'll get an email as soon as an admin reviews it and grants workspace access.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex justify-center gap-2">
+      <CardContent className="flex flex-col items-center gap-4">
         <Badge variant="secondary">{STATUS_LABEL.pending}</Badge>
+        <div className="w-full border-t border-border pt-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            First one here? If no Super Admin exists yet, you can claim this workspace to start reviewing applications.
+          </p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={onClaim}>
+            <Crown className="mr-2 h-4 w-4" /> Claim as Super Admin
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
