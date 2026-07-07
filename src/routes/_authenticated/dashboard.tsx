@@ -1,11 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { useMyProfile, useMyRoles, isAdmin, isDeptHead } from "@/lib/workspace-hooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DEPT_LABEL, STATUS_LABEL } from "@/lib/workspace-schema";
-import { AlertCircle, CheckCircle2, ClipboardList, Users, Briefcase, Clock, Sparkles } from "lucide-react";
+import { AlertCircle, ClipboardList, Users, Briefcase, Clock, Sparkles, Crown } from "lucide-react";
+import { claimSuperAdmin } from "@/lib/admin.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
