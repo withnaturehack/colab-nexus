@@ -147,6 +147,3 @@ function StatCard({ icon: Icon, label, value, hint }: { icon: React.ComponentTyp
   );
 }
 
-// Icon prop typing helper
-type _IconType = typeof CheckCircle2;
-void ({} as _IconType);
