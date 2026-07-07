@@ -14,16 +14,240 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      application_status_history: {
+        Row: {
+          application_id: string
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["application_status"] | null
+          id: string
+          note: string | null
+          to_status: Database["public"]["Enums"]["application_status"]
+        }
+        Insert: {
+          application_id: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["application_status"] | null
+          id?: string
+          note?: string | null
+          to_status: Database["public"]["Enums"]["application_status"]
+        }
+        Update: {
+          application_id?: string
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["application_status"] | null
+          id?: string
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["application_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_status_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          agreed_terms: boolean
+          availability: string | null
+          bio: string | null
+          city: string | null
+          college: string | null
+          created_at: string
+          department_applied: Database["public"]["Enums"]["department"]
+          email: string
+          experience: string | null
+          full_name: string
+          github_url: string | null
+          id: string
+          internal_notes: string | null
+          interview_notes: string | null
+          linkedin_url: string | null
+          phone: string | null
+          portfolio_url: string | null
+          resume_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          skills: string[] | null
+          status: Database["public"]["Enums"]["application_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agreed_terms?: boolean
+          availability?: string | null
+          bio?: string | null
+          city?: string | null
+          college?: string | null
+          created_at?: string
+          department_applied: Database["public"]["Enums"]["department"]
+          email: string
+          experience?: string | null
+          full_name: string
+          github_url?: string | null
+          id?: string
+          internal_notes?: string | null
+          interview_notes?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          skills?: string[] | null
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agreed_terms?: boolean
+          availability?: string | null
+          bio?: string | null
+          city?: string | null
+          college?: string | null
+          created_at?: string
+          department_applied?: Database["public"]["Enums"]["department"]
+          email?: string
+          experience?: string | null
+          full_name?: string
+          github_url?: string | null
+          id?: string
+          internal_notes?: string | null
+          interview_notes?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          portfolio_url?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          skills?: string[] | null
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          college: string | null
+          created_at: string
+          department: Database["public"]["Enums"]["department"] | null
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          reporting_head_id: string | null
+          skills: string[] | null
+          status: Database["public"]["Enums"]["member_status"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          college?: string | null
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          reporting_head_id?: string | null
+          skills?: string[] | null
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          college?: string | null
+          created_at?: string
+          department?: Database["public"]["Enums"]["department"] | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          reporting_head_id?: string | null
+          skills?: string[] | null
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_head_of: {
+        Args: {
+          _dept: Database["public"]["Enums"]["department"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      user_department: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["department"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "super_admin"
+        | "technical_head"
+        | "content_head"
+        | "marketing_head"
+        | "pr_head"
+        | "event_head"
+        | "member"
+      application_status:
+        | "pending"
+        | "under_review"
+        | "interview"
+        | "assignment"
+        | "accepted"
+        | "rejected"
+        | "onboarded"
+      department: "technical" | "content_design" | "marketing" | "pr" | "events"
+      member_status: "pending_approval" | "active" | "rejected" | "disabled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +374,27 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "super_admin",
+        "technical_head",
+        "content_head",
+        "marketing_head",
+        "pr_head",
+        "event_head",
+        "member",
+      ],
+      application_status: [
+        "pending",
+        "under_review",
+        "interview",
+        "assignment",
+        "accepted",
+        "rejected",
+        "onboarded",
+      ],
+      department: ["technical", "content_design", "marketing", "pr", "events"],
+      member_status: ["pending_approval", "active", "rejected", "disabled"],
+    },
   },
 } as const
