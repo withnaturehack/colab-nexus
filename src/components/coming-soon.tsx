@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 
-function ComingSoon({ title, description }: { title: string; description: string }) {
+export function ComingSoon({ title, description }: { title: string; description: string }) {
   return (
     <WorkspaceShell title={title} subtitle={description}>
       <Card className="surface-1 max-w-2xl mx-auto animate-fade-in">
@@ -20,10 +19,3 @@ function ComingSoon({ title, description }: { title: string; description: string
     </WorkspaceShell>
   );
 }
-
-export const routes = {
-  tasks: createFileRoute("/_authenticated/tasks")({ component: () => <ComingSoon title="Tasks" description="Kanban, timeline, and calendar views." /> }),
-};
-
-// Individual route files below re-export their own Route.
-export { ComingSoon };
