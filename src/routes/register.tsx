@@ -234,8 +234,30 @@ function RegisterPage() {
                     <Field label="Portfolio URL"><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
                     <Field label="GitHub URL"><Input {...form.register("github_url")} placeholder="https://github.com/…" /></Field>
                     <Field label="LinkedIn URL"><Input {...form.register("linkedin_url")} placeholder="https://linkedin.com/…" /></Field>
-                    <Field label="Resume URL"><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
+                    <Field label="Resume URL (or upload below)"><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
                   </div>
+                  <Field label="Upload resume (PDF/DOC · optional)">
+                    <label className="group relative flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border bg-surface/50 px-4 py-3 text-sm hover:border-primary/50 transition">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+                      />
+                      {resumeFile ? (
+                        <>
+                          <FileText className="h-4 w-4 text-primary" />
+                          <span className="truncate">{resumeFile.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{Math.round(resumeFile.size / 1024)} KB</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Click to upload — will be saved to our Drive</span>
+                        </>
+                      )}
+                    </label>
+                  </Field>
                   <Field label="Skills (comma separated)"><Input {...form.register("skills")} placeholder="React, Figma, Marketing…" /></Field>
                   <Field label="Short bio"><Textarea rows={3} {...form.register("bio")} /></Field>
                   <Field label="Experience"><Textarea rows={3} {...form.register("experience")} /></Field>
