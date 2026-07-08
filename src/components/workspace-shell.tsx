@@ -109,6 +109,19 @@ export function WorkspaceShell({ children, title, subtitle, actions }: { childre
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span>Applications</span>
               </Link>
+              {admin && (
+                <Link
+                  to="/admin/team"
+                  className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+                    pathname.startsWith("/admin/team")
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-card"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  }`}
+                >
+                  <Users className="h-4 w-4 text-primary" />
+                  <span>Team & Roles</span>
+                </Link>
+              )}
             </div>
           )}
         </nav>

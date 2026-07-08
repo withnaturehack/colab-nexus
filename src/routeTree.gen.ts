@@ -24,6 +24,7 @@ import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
+import { Route as AuthenticatedAdminTeamRouteImport } from './routes/_authenticated/admin.team'
 import { Route as AuthenticatedAdminApplicationsRouteImport } from './routes/_authenticated/admin.applications'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
@@ -102,6 +103,11 @@ const AuthenticatedAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminTeamRoute = AuthenticatedAdminTeamRouteImport.update({
+  id: '/admin/team',
+  path: '/admin/team',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminApplicationsRoute =
   AuthenticatedAdminApplicationsRouteImport.update({
     id: '/admin/applications',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/admin/applications': typeof AuthenticatedAdminApplicationsRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/admin/applications': typeof AuthenticatedAdminApplicationsRoute
+  '/admin/team': typeof AuthenticatedAdminTeamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/admin/applications': typeof AuthenticatedAdminApplicationsRoute
+  '/_authenticated/admin/team': typeof AuthenticatedAdminTeamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/tasks'
     | '/admin/applications'
+    | '/admin/team'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/tasks'
     | '/admin/applications'
+    | '/admin/team'
   id:
     | '__root__'
     | '/'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/tasks'
     | '/_authenticated/admin/applications'
+    | '/_authenticated/admin/team'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -333,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/team': {
+      id: '/_authenticated/admin/team'
+      path: '/admin/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AuthenticatedAdminTeamRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/applications': {
       id: '/_authenticated/admin/applications'
       path: '/admin/applications'
@@ -354,6 +373,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedAdminApplicationsRoute: typeof AuthenticatedAdminApplicationsRoute
+  AuthenticatedAdminTeamRoute: typeof AuthenticatedAdminTeamRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -367,6 +387,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedAdminApplicationsRoute: AuthenticatedAdminApplicationsRoute,
+  AuthenticatedAdminTeamRoute: AuthenticatedAdminTeamRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
