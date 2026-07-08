@@ -107,6 +107,14 @@ export const approveApplication = createServerFn({ method: "POST" })
       note: `Approved as ${data.role} in ${data.department}`,
     });
 
+    await supabaseAdmin.from("notifications").insert({
+      user_id: app.user_id,
+      title: "🎉 Application approved",
+      message: `Welcome to CoLab Nation — you've been added to the ${data.department.replace("_", " ")} team as ${data.role.replace(/_/g, " ")}.`,
+      type: "success",
+      link: "/dashboard",
+    });
+
     return { ok: true };
   });
 
