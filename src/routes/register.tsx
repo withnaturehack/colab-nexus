@@ -2,8 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, registrationSchema, type RegistrationInput } from "@/lib/workspace-schema";
+import { uploadResumeToDrive } from "@/lib/drive.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, CheckCircle2, Upload, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -39,6 +41,9 @@ function RegisterPage() {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const uploadDrive = useServerFn(uploadResumeToDrive);
 
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
@@ -82,13 +87,36 @@ function RegisterPage() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: window.location.origin + "/auth",
+        emailRedirectTo: window.location.origin + "/verify-email?email=" + encodeURIComponent(data.email),
         data: { full_name: data.full_name },
       },
     });
     if (signErr || !signUp.user) {
       setSubmitting(false);
       return toast.error(signErr?.message ?? "Signup failed");
+    }
+
+    // Upload resume to Drive if provided
+    let resumeLink = data.resume_url || null;
+    if (resumeFile) {
+      try {
+        setUploading(true);
+        const buf = await resumeFile.arrayBuffer();
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+        const up = await uploadDrive({
+          data: {
+            filename: resumeFile.name,
+            mimeType: resumeFile.type || "application/octet-stream",
+            contentBase64: b64,
+          },
+        });
+        resumeLink = up.webViewLink;
+        toast.success("Resume uploaded to Drive");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Resume upload failed — you can add a link instead");
+      } finally {
+        setUploading(false);
+      }
     }
 
     const skillsArr = data.skills
@@ -106,7 +134,7 @@ function RegisterPage() {
       portfolio_url: data.portfolio_url || null,
       github_url: data.github_url || null,
       linkedin_url: data.linkedin_url || null,
-      resume_url: data.resume_url || null,
+      resume_url: resumeLink,
       skills: skillsArr,
       bio: data.bio || null,
       experience: data.experience || null,
@@ -130,11 +158,14 @@ function RegisterPage() {
             </div>
             <CardTitle className="mt-4 font-display text-2xl">Application received</CardTitle>
             <CardDescription>
-              Thanks — your application is now under review. You'll get an email once an admin approves your account.
+              Check your inbox — we've sent a verification link. After verifying, admins will review your application and activate your workspace.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate({ to: "/auth" })} className="w-full">
+          <CardContent className="space-y-2">
+            <Button onClick={() => navigate({ to: "/verify-email", search: { email: form.getValues("email") } })} className="w-full shadow-glow">
+              Verify email
+            </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="w-full">
               Go to sign in
             </Button>
           </CardContent>
@@ -203,8 +234,30 @@ function RegisterPage() {
                     <Field label="Portfolio URL"><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
                     <Field label="GitHub URL"><Input {...form.register("github_url")} placeholder="https://github.com/…" /></Field>
                     <Field label="LinkedIn URL"><Input {...form.register("linkedin_url")} placeholder="https://linkedin.com/…" /></Field>
-                    <Field label="Resume URL"><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
+                    <Field label="Resume URL (or upload below)"><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
                   </div>
+                  <Field label="Upload resume (PDF/DOC · optional)">
+                    <label className="group relative flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border bg-surface/50 px-4 py-3 text-sm hover:border-primary/50 transition">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+                      />
+                      {resumeFile ? (
+                        <>
+                          <FileText className="h-4 w-4 text-primary" />
+                          <span className="truncate">{resumeFile.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{Math.round(resumeFile.size / 1024)} KB</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Click to upload — will be saved to our Drive</span>
+                        </>
+                      )}
+                    </label>
+                  </Field>
                   <Field label="Skills (comma separated)"><Input {...form.register("skills")} placeholder="React, Figma, Marketing…" /></Field>
                   <Field label="Short bio"><Textarea rows={3} {...form.register("bio")} /></Field>
                   <Field label="Experience"><Textarea rows={3} {...form.register("experience")} /></Field>
@@ -246,9 +299,9 @@ function RegisterPage() {
                     Continue <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={submitting} className="shadow-glow">
-                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Submit application
+                  <Button type="submit" disabled={submitting || uploading} className="shadow-glow">
+                    {(submitting || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {uploading ? "Uploading resume…" : submitting ? "Submitting…" : "Submit application"}
                   </Button>
                 )}
               </div>

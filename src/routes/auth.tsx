@@ -1,14 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { seedSuperAdmin } from "@/lib/bootstrap.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowLeft, Crown } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
@@ -26,8 +28,27 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "forgot">("signin");
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const seedFn = useServerFn(seedSuperAdmin);
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      const res = await seedFn({});
+      if (!res.ok) toast.error(res.message ?? "Seed failed");
+      else {
+        toast.success("Super admin ready: colabnation@gmail.in / 54321");
+        setEmail("colabnation@gmail.in");
+        setPassword("54321");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Seed failed");
+    }
+    setSeeding(false);
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -41,6 +62,11 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
+      if (/confirm|verify/i.test(error.message)) {
+        toast.error("Please verify your email first");
+        navigate({ to: "/verify-email", search: { email } });
+        return;
+      }
       toast.error(error.message);
       return;
     }
@@ -156,6 +182,10 @@ function AuthPage() {
                   Apply to join
                 </Link>
               </div>
+              <Button variant="ghost" size="sm" onClick={handleSeed} disabled={seeding} className="mt-2 w-full text-xs text-muted-foreground">
+                {seeding ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Crown className="mr-2 h-3 w-3" />}
+                Bootstrap super admin (colabnation@gmail.in)
+              </Button>
             </CardContent>
           </Card>
         </div>

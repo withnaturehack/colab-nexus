@@ -107,6 +107,14 @@ export const approveApplication = createServerFn({ method: "POST" })
       note: `Approved as ${data.role} in ${data.department}`,
     });
 
+    await supabaseAdmin.from("notifications").insert({
+      user_id: app.user_id,
+      title: "🎉 Application approved",
+      message: `Welcome to CoLab Nation — you've been added to the ${data.department.replace("_", " ")} team as ${data.role.replace(/_/g, " ")}.`,
+      type: "success",
+      link: "/dashboard",
+    });
+
     return { ok: true };
   });
 
@@ -152,6 +160,14 @@ export const rejectApplication = createServerFn({ method: "POST" })
       to_status: "rejected",
       changed_by: userId,
       note: data.note ?? null,
+    });
+    await supabaseAdmin.from("notifications").insert({
+      user_id: app.user_id,
+      title: "Application update",
+      message: data.note
+        ? `Your application was not accepted. Note from the team: ${data.note}`
+        : "Your application was not accepted at this time. Thank you for applying.",
+      type: "warning",
     });
     return { ok: true };
   });
