@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, ArrowLeft } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -80,8 +81,8 @@ function AuthPage() {
           </Link>
           <Card className="glass shadow-elegant">
             <CardHeader className="text-center">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl shadow-glow" style={{ background: "var(--gradient-primary)" }}>
-                <span className="font-display text-lg font-bold text-primary-foreground">c</span>
+              <div className="mx-auto flex justify-center">
+                <BrandLogo size={56} />
               </div>
               <CardTitle className="mt-4 font-display text-2xl">
                 {mode === "signin" ? "Welcome back" : "Reset your password"}

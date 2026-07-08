@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Building2, LayoutDashboard, ShieldCheck, Users, Sparkles } from "lucide-react";
+import { BrandLogo, brandLogoUrl } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -12,14 +13,8 @@ function Landing() {
       {/* Nav */}
       <header className="border-b border-border/50 backdrop-blur-xl sticky top-0 z-40 bg-background/60">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: "var(--gradient-primary)" }}>
-              <span className="font-display text-sm font-bold text-primary-foreground">c</span>
-            </div>
-            <div className="leading-tight">
-              <div className="font-display text-sm font-semibold">CoLab Nation</div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Workspace</div>
-            </div>
+          <Link to="/">
+            <BrandLogo size={36} withWordmark />
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/auth">
@@ -35,20 +30,33 @@ function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-7xl px-6 pt-24 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-4 py-1.5 text-xs text-muted-foreground animate-fade-in">
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
-          Internal Operating System · Members only
+      <section className="relative mx-auto max-w-7xl px-6 pt-20 pb-20 text-center">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-10 mx-auto h-[420px] max-w-3xl opacity-40 blur-3xl"
+          style={{ background: "var(--gradient-glow)" }}
+        />
+        <div className="relative">
+          <div className="mx-auto mb-8 flex justify-center animate-scale-in">
+            <img
+              src={brandLogoUrl}
+              alt="CoLab Nation"
+              className="h-28 w-28 rounded-2xl shadow-glow ring-1 ring-white/10 object-cover"
+            />
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-4 py-1.5 text-xs text-muted-foreground animate-fade-in">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            Powering Ideas into Reality · Members only
+          </div>
+          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl animate-fade-in">
+            One workspace to run
+            <br />
+            <span className="gradient-text">the entire organization.</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground animate-fade-in">
+            Recruitment, onboarding, tasks, projects, departments, meetings, and reports —
+            every layer of CoLab Nation, unified.
+          </p>
         </div>
-        <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl animate-fade-in">
-          One workspace to run
-          <br />
-          <span className="gradient-text">the entire organization.</span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground animate-fade-in">
-          Recruitment, onboarding, tasks, projects, departments, meetings, and reports —
-          every layer of CoLab Nation, unified.
-        </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-in">
           <Link to="/register">
             <Button size="lg" className="shadow-glow">
