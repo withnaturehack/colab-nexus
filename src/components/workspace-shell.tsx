@@ -151,9 +151,8 @@ export function WorkspaceShell({ children, title, subtitle, actions }: { childre
             </div>
             <div className="flex items-center gap-2">
               {actions}
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="h-4 w-4" />
-              </Button>
+              <NotificationsBell />
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="rounded-full">
