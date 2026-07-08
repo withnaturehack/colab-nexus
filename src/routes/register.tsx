@@ -158,11 +158,14 @@ function RegisterPage() {
             </div>
             <CardTitle className="mt-4 font-display text-2xl">Application received</CardTitle>
             <CardDescription>
-              Thanks — your application is now under review. You'll get an email once an admin approves your account.
+              Check your inbox — we've sent a verification link. After verifying, admins will review your application and activate your workspace.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate({ to: "/auth" })} className="w-full">
+          <CardContent className="space-y-2">
+            <Button onClick={() => navigate({ to: "/verify-email", search: { email: form.getValues("email") } })} className="w-full shadow-glow">
+              Verify email
+            </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="w-full">
               Go to sign in
             </Button>
           </CardContent>
