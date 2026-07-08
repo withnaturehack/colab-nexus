@@ -41,6 +41,11 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
+      if (/confirm|verify/i.test(error.message)) {
+        toast.error("Please verify your email first");
+        navigate({ to: "/verify-email", search: { email } });
+        return;
+      }
       toast.error(error.message);
       return;
     }
