@@ -15,13 +15,11 @@ const roleInput = z.object({
   ]),
 });
 
-type SupaCtx = Parameters<Parameters<ReturnType<typeof createServerFn>["middleware"]>[0][0]>[0] extends never ? never : never;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function requireSuperAdmin(supabase: any, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "super_admin" });
   if (data !== true) throw new Error("Only super admins can manage roles");
 }
-export type _Unused = SupaCtx;
 
 export const grantRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
