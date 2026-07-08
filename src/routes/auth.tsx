@@ -28,8 +28,27 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "forgot">("signin");
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const seedFn = useServerFn(seedSuperAdmin);
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      const res = await seedFn({});
+      if (!res.ok) toast.error(res.message ?? "Seed failed");
+      else {
+        toast.success("Super admin ready: colabnation@gmail.in / 54321");
+        setEmail("colabnation@gmail.in");
+        setPassword("54321");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Seed failed");
+    }
+    setSeeding(false);
+  };
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
