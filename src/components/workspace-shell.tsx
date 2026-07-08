@@ -30,6 +30,7 @@ import {
   Settings,
   Sparkles,
 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -71,14 +72,8 @@ export function WorkspaceShell({ children, title, subtitle, actions }: { childre
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
-        <div className="flex h-16 items-center gap-2 px-5 border-b border-sidebar-border">
-          <div className="grid h-8 w-8 place-items-center rounded-lg shadow-glow" style={{ background: "var(--gradient-primary)" }}>
-            <span className="font-display text-sm font-bold text-primary-foreground">c</span>
-          </div>
-          <div className="leading-tight">
-            <div className="font-display text-sm font-semibold">CoLab Nation</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Workspace</div>
-          </div>
+        <div className="flex h-16 items-center px-5 border-b border-sidebar-border">
+          <BrandLogo size={34} withWordmark />
         </div>
         <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
           {NAV.map((item) => {
