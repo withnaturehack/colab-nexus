@@ -299,9 +299,9 @@ function RegisterPage() {
                     Continue <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={submitting} className="shadow-glow">
-                    {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Submit application
+                  <Button type="submit" disabled={submitting || uploading} className="shadow-glow">
+                    {(submitting || uploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {uploading ? "Uploading resume…" : submitting ? "Submitting…" : "Submit application"}
                   </Button>
                 )}
               </div>
