@@ -190,3 +190,73 @@ export function WorkspaceShell({ children, title, subtitle, actions }: { childre
     </div>
   );
 }
+
+type Notif = { id: string; title: string; message: string | null; link: string | null; type: string; read_at: string | null; created_at: string };
+
+function NotificationsBell() {
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ["notifications", "me"],
+    queryFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return [] as Notif[];
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", u.user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data as Notif[];
+    },
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  });
+
+  const unread = (data ?? []).filter((n) => !n.read_at).length;
+
+  const markAllRead = async () => {
+    const ids = (data ?? []).filter((n) => !n.read_at).map((n) => n.id);
+    if (ids.length === 0) return;
+    await supabase.from("notifications").update({ read_at: new Date().toISOString() }).in("id", ids);
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative rounded-full">
+          <Bell className="h-4 w-4" />
+          {unread > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+              {unread}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-80">
+        <div className="flex items-center justify-between px-2 pt-2">
+          <div className="text-sm font-semibold">Notifications</div>
+          {unread > 0 && (
+            <button onClick={markAllRead} className="text-xs text-primary hover:underline">Mark all read</button>
+          )}
+        </div>
+        <DropdownMenuSeparator />
+        {(data ?? []).length === 0 ? (
+          <div className="p-6 text-center text-xs text-muted-foreground">You're all caught up ✨</div>
+        ) : (
+          <div className="max-h-80 overflow-y-auto">
+            {(data ?? []).map((n) => (
+              <div key={n.id} className={`px-3 py-2 border-b border-border/50 last:border-0 ${!n.read_at ? "bg-primary/5" : ""}`}>
+                <div className="text-sm font-medium">{n.title}</div>
+                {n.message && <div className="text-xs text-muted-foreground mt-0.5">{n.message}</div>}
+                <div className="text-[10px] text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString()}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
