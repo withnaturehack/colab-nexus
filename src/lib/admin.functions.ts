@@ -161,6 +161,14 @@ export const rejectApplication = createServerFn({ method: "POST" })
       changed_by: userId,
       note: data.note ?? null,
     });
+    await supabaseAdmin.from("notifications").insert({
+      user_id: app.user_id,
+      title: "Application update",
+      message: data.note
+        ? `Your application was not accepted. Note from the team: ${data.note}`
+        : "Your application was not accepted at this time. Thank you for applying.",
+      type: "warning",
+    });
     return { ok: true };
   });
 
