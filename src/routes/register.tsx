@@ -87,13 +87,36 @@ function RegisterPage() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: window.location.origin + "/auth",
+        emailRedirectTo: window.location.origin + "/verify-email?email=" + encodeURIComponent(data.email),
         data: { full_name: data.full_name },
       },
     });
     if (signErr || !signUp.user) {
       setSubmitting(false);
       return toast.error(signErr?.message ?? "Signup failed");
+    }
+
+    // Upload resume to Drive if provided
+    let resumeLink = data.resume_url || null;
+    if (resumeFile) {
+      try {
+        setUploading(true);
+        const buf = await resumeFile.arrayBuffer();
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+        const up = await uploadDrive({
+          data: {
+            filename: resumeFile.name,
+            mimeType: resumeFile.type || "application/octet-stream",
+            contentBase64: b64,
+          },
+        });
+        resumeLink = up.webViewLink;
+        toast.success("Resume uploaded to Drive");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Resume upload failed — you can add a link instead");
+      } finally {
+        setUploading(false);
+      }
     }
 
     const skillsArr = data.skills
@@ -111,7 +134,7 @@ function RegisterPage() {
       portfolio_url: data.portfolio_url || null,
       github_url: data.github_url || null,
       linkedin_url: data.linkedin_url || null,
-      resume_url: data.resume_url || null,
+      resume_url: resumeLink,
       skills: skillsArr,
       bio: data.bio || null,
       experience: data.experience || null,
