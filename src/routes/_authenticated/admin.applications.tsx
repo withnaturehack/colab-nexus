@@ -49,9 +49,22 @@ type Application = {
 };
 
 function ApplicationsPage() {
+  const qc = useQueryClient();
   const { data: roles } = useMyRoles();
   const admin = isAdmin(roles);
   const head = isDeptHead(roles);
+  const headDept = useMemo<Department | null>(() => {
+    if (!roles) return null;
+    const map: Record<string, Department> = {
+      technical_head: "technical",
+      content_head: "content_design",
+      marketing_head: "marketing",
+      pr_head: "pr",
+      event_head: "events",
+    };
+    for (const r of roles) if (map[r]) return map[r];
+    return null;
+  }, [roles]);
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<ApplicationStatus | "all">("pending");
 
@@ -66,6 +79,21 @@ function ApplicationsPage() {
       return data as Application[];
     },
   });
+
+  // Realtime: refresh list on any application change (RLS filters what each user sees)
+  useEffect(() => {
+    const ch = supabase
+      .channel("applications-inbox")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications" },
+        () => qc.invalidateQueries({ queryKey: ["applications"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [qc]);
 
   if (!admin && !head) {
     return (
