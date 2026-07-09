@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,8 +17,8 @@ import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Search, ExternalLink, Loader2 } from "lucide-react";
-import { DEPARTMENTS, DEPT_LABEL, ROLE_LABEL, STATUS_LABEL, type ApplicationStatus, DEPT_ROLE } from "@/lib/workspace-schema";
+import { CheckCircle2, XCircle, Search, ExternalLink, Loader2, Inbox, Radio } from "lucide-react";
+import { DEPARTMENTS, DEPT_LABEL, ROLE_LABEL, STATUS_LABEL, type ApplicationStatus, type Department, DEPT_ROLE } from "@/lib/workspace-schema";
 import { useMyRoles, isAdmin, isDeptHead } from "@/lib/workspace-hooks";
 import { approveApplication, rejectApplication, updateApplicationStatus } from "@/lib/admin.functions";
 
@@ -49,9 +49,22 @@ type Application = {
 };
 
 function ApplicationsPage() {
+  const qc = useQueryClient();
   const { data: roles } = useMyRoles();
   const admin = isAdmin(roles);
   const head = isDeptHead(roles);
+  const headDept = useMemo<Department | null>(() => {
+    if (!roles) return null;
+    const map: Record<string, Department> = {
+      technical_head: "technical",
+      content_head: "content_design",
+      marketing_head: "marketing",
+      pr_head: "pr",
+      event_head: "events",
+    };
+    for (const r of roles) if (map[r]) return map[r];
+    return null;
+  }, [roles]);
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<ApplicationStatus | "all">("pending");
 
@@ -67,6 +80,21 @@ function ApplicationsPage() {
     },
   });
 
+  // Realtime: refresh list on any application change (RLS filters what each user sees)
+  useEffect(() => {
+    const ch = supabase
+      .channel("applications-inbox")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications" },
+        () => qc.invalidateQueries({ queryKey: ["applications"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [qc]);
+
   if (!admin && !head) {
     return (
       <WorkspaceShell title="Applications">
@@ -75,20 +103,35 @@ function ApplicationsPage() {
     );
   }
 
-  const filtered = (apps ?? []).filter((a) => {
+  // Dept heads (non-admin) get an inbox scoped to their department
+  const scoped = admin ? (apps ?? []) : (apps ?? []).filter((a) => !headDept || a.department_applied === headDept);
+
+  const filtered = scoped.filter((a) => {
     const matchTab = tab === "all" ? true : a.status === tab;
     const matchQ = !q || `${a.full_name} ${a.email} ${a.college ?? ""}`.toLowerCase().includes(q.toLowerCase());
     return matchTab && matchQ;
   });
 
   const counts: Record<string, number> = {};
-  (apps ?? []).forEach((a) => (counts[a.status] = (counts[a.status] ?? 0) + 1));
+  scoped.forEach((a) => (counts[a.status] = (counts[a.status] ?? 0) + 1));
+
+  const inboxTitle = admin ? "Applications" : `Inbox · ${headDept ? DEPT_LABEL[headDept] : "Department"}`;
+  const inboxSub = admin
+    ? "Review pending applicants and grant workspace access."
+    : "Live inbox of applicants for your department. Approve or reject in one click.";
 
   return (
-    <WorkspaceShell title="Applications" subtitle="Review pending applicants and grant workspace access.">
+    <WorkspaceShell title={inboxTitle} subtitle={inboxSub}>
       <div className="space-y-4 animate-fade-in">
         <Card className="surface-1">
           <CardContent className="p-4 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Inbox className="h-4 w-4 text-primary" />
+              <span>{scoped.length} total</span>
+              <span className="mx-1">·</span>
+              <Radio className="h-3 w-3 text-emerald-500 animate-pulse" />
+              <span className="text-emerald-500">Live</span>
+            </div>
             <div className="relative flex-1 min-w-[220px]">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, email, college…" className="pl-9" />
@@ -98,7 +141,7 @@ function ApplicationsPage() {
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList className="flex-wrap h-auto">
-            <TabsTrigger value="all">All ({apps?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="all">All ({scoped.length})</TabsTrigger>
             <TabsTrigger value="pending">Pending ({counts.pending ?? 0})</TabsTrigger>
             <TabsTrigger value="under_review">Review ({counts.under_review ?? 0})</TabsTrigger>
             <TabsTrigger value="interview">Interview ({counts.interview ?? 0})</TabsTrigger>
