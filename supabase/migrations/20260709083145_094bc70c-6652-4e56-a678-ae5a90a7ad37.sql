@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS profiles_select_directory_fields ON public.profiles;
