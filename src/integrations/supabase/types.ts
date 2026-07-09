@@ -240,7 +240,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      member_directory: {
+        Row: {
+          avatar_url: string | null
+          department: Database["public"]["Enums"]["department"] | null
+          full_name: string | null
+          id: string | null
+          status: Database["public"]["Enums"]["member_status"] | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          department?: Database["public"]["Enums"]["department"] | null
+          full_name?: string | null
+          id?: string | null
+          status?: Database["public"]["Enums"]["member_status"] | null
+        }
+        Update: {
+          avatar_url?: string | null
+          department?: Database["public"]["Enums"]["department"] | null
+          full_name?: string | null
+          id?: string | null
+          status?: Database["public"]["Enums"]["member_status"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
