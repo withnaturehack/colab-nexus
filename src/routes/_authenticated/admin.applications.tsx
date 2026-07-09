@@ -141,7 +141,7 @@ function ApplicationsPage() {
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList className="flex-wrap h-auto">
-            <TabsTrigger value="all">All ({apps?.length ?? 0})</TabsTrigger>
+            <TabsTrigger value="all">All ({scoped.length})</TabsTrigger>
             <TabsTrigger value="pending">Pending ({counts.pending ?? 0})</TabsTrigger>
             <TabsTrigger value="under_review">Review ({counts.under_review ?? 0})</TabsTrigger>
             <TabsTrigger value="interview">Interview ({counts.interview ?? 0})</TabsTrigger>
