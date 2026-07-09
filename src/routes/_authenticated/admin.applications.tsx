@@ -17,8 +17,8 @@ import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Search, ExternalLink, Loader2 } from "lucide-react";
-import { DEPARTMENTS, DEPT_LABEL, ROLE_LABEL, STATUS_LABEL, type ApplicationStatus, DEPT_ROLE } from "@/lib/workspace-schema";
+import { CheckCircle2, XCircle, Search, ExternalLink, Loader2, Inbox, Radio } from "lucide-react";
+import { DEPARTMENTS, DEPT_LABEL, ROLE_LABEL, STATUS_LABEL, type ApplicationStatus, type Department, DEPT_ROLE } from "@/lib/workspace-schema";
 import { useMyRoles, isAdmin, isDeptHead } from "@/lib/workspace-hooks";
 import { approveApplication, rejectApplication, updateApplicationStatus } from "@/lib/admin.functions";
 
