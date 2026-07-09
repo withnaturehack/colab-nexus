@@ -14,6 +14,7 @@ import { Loader2, Mail, Lock, ArrowLeft, Crown } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sign in · CoLab Nation Workspace" },
