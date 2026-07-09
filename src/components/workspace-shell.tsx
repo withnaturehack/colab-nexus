@@ -213,6 +213,28 @@ function NotificationsBell() {
     refetchInterval: 30_000,
   });
 
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user || cancelled) return;
+      channel = supabase
+        .channel(`notifications-${u.user.id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${u.user.id}` },
+          () => qc.invalidateQueries({ queryKey: ["notifications", "me"] }),
+        )
+        .subscribe();
+    })();
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
+
   const unread = (data ?? []).filter((n) => !n.read_at).length;
 
   const markAllRead = async () => {
