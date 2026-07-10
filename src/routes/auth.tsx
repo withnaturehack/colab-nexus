@@ -183,10 +183,12 @@ function AuthPage() {
                   Apply to join
                 </Link>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleSeed} disabled={seeding} className="mt-2 w-full text-xs text-muted-foreground">
-                {seeding ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Crown className="mr-2 h-3 w-3" />}
-                Bootstrap super admin (colabnation@gmail.in)
-              </Button>
+              {typeof window !== "undefined" && new URLSearchParams(window.location.search).has("bootstrap") && (
+                <Button variant="ghost" size="sm" onClick={handleSeed} disabled={seeding} className="mt-2 w-full text-xs text-muted-foreground">
+                  {seeding ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Crown className="mr-2 h-3 w-3" />}
+                  Bootstrap super admin
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
