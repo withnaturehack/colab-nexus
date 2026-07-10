@@ -1,0 +1,1 @@
+- [Lovable vite-tanstack-config port fix](lovable-vite-sandbox-port.md) — its default host `::`/port 8080 breaks on Replit; override in vite.config.ts.
