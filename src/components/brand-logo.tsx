@@ -1,4 +1,4 @@
-import logo from "@/assets/colab-nation-logo.jpg.asset.json";
+import logoUrl from "@/assets/colab-nation-logo.jpg";
 
 type Props = {
   size?: number;
@@ -15,7 +15,7 @@ export function BrandLogo({ size = 40, className = "", withWordmark = false, tag
         style={{ width: size, height: size, background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 70%)" }}
       >
         <img
-          src={logo.url}
+          src={logoUrl}
           alt="CoLab Nation"
           width={size}
           height={size}
@@ -37,4 +37,4 @@ export function BrandLogo({ size = 40, className = "", withWordmark = false, tag
   );
 }
 
-export const brandLogoUrl = logo.url;
+export const brandLogoUrl = logoUrl;
