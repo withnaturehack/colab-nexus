@@ -13,7 +13,9 @@ import { toast } from "sonner";
 import { Loader2, Shield, ShieldOff, Search, Crown } from "lucide-react";
 import { useMyRoles, isAdmin } from "@/lib/workspace-hooks";
 import { APP_ROLES, ROLE_LABEL, type AppRole } from "@/lib/workspace-schema";
-import { grantRole, revokeRole } from "@/lib/team.functions";
+import { grantRole, revokeRole, createUserAccount } from "@/lib/team.functions";
+import { DEPARTMENTS, type Department } from "@/lib/workspace-schema";
+import { UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/team")({
   component: TeamPage,
