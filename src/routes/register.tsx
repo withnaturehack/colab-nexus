@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, registrationSchema, type RegistrationInput } from "@/lib/workspace-schema";
 import { uploadResumeToDrive } from "@/lib/drive.functions";
+import { submitApplication } from "@/lib/bootstrap.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
