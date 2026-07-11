@@ -71,3 +71,74 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
     if (error) return { ok: false, message: error.message };
     return { ok: true };
   });
+
+const applicationInput = z.object({
+  email: z.string().email(),
+  full_name: z.string().min(1),
+  phone: z.string().nullable().optional(),
+  college: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  department_applied: z.enum(["technical", "content_design", "marketing", "pr", "events"]),
+  portfolio_url: z.string().nullable().optional(),
+  github_url: z.string().nullable().optional(),
+  linkedin_url: z.string().nullable().optional(),
+  resume_url: z.string().nullable().optional(),
+  skills: z.array(z.string()).optional().default([]),
+  bio: z.string().nullable().optional(),
+  experience: z.string().nullable().optional(),
+  availability: z.string().nullable().optional(),
+  agreed_terms: z.literal(true),
+});
+
+// Public: creates the application row after client-side signUp. Since email
+// confirmation is required, the just-signed-up user has no session yet, so a
+// direct client insert (RLS: authenticated + user_id = auth.uid()) 401s.
+// We look the user up by email via admin and insert on their behalf.
+export const submitApplication = createServerFn({ method: "POST" })
+  .inputValidator((raw: unknown) => applicationInput.parse(raw))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Find the auth user by email (paginate defensively)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let user: any = null;
+    for (let page = 1; page <= 10 && !user; page++) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: list, error } = await (supabaseAdmin.auth.admin as any).listUsers({ page, perPage: 200 });
+      if (error) return { ok: false, message: error.message };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      user = list?.users?.find((u: any) => (u.email ?? "").toLowerCase() === data.email.toLowerCase());
+      if (!list?.users?.length || list.users.length < 200) break;
+    }
+    if (!user) return { ok: false, message: "Account not found. Please sign up again." };
+
+    // Skip if this user already has an application
+    const { data: existing } = await supabaseAdmin
+      .from("applications")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (existing) return { ok: true, alreadyExists: true };
+
+    const { error: insErr } = await supabaseAdmin.from("applications").insert({
+      user_id: user.id,
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone || null,
+      college: data.college || null,
+      city: data.city || null,
+      department_applied: data.department_applied,
+      portfolio_url: data.portfolio_url || null,
+      github_url: data.github_url || null,
+      linkedin_url: data.linkedin_url || null,
+      resume_url: data.resume_url || null,
+      skills: data.skills ?? [],
+      bio: data.bio || null,
+      experience: data.experience || null,
+      availability: data.availability || null,
+      agreed_terms: true,
+      status: "pending",
+    });
+    if (insErr) return { ok: false, message: insErr.message };
+    return { ok: true };
+  });
