@@ -271,7 +271,7 @@ function NotificationsBell() {
             {(data ?? []).map((n) => (
               <div key={n.id} className={`px-3 py-2 border-b border-border/50 last:border-0 ${!n.read_at ? "bg-primary/5" : ""}`}>
                 <div className="text-sm font-medium">{n.title}</div>
-                {n.message && <div className="text-xs text-muted-foreground mt-0.5">{n.message}</div>}
+                {n.message && <div className="text-xs text-muted-foreground mt-0.5 whitespace-pre-line">{n.message}</div>}
                 <div className="text-[10px] text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString()}</div>
               </div>
             ))}

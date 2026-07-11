@@ -142,17 +142,35 @@ export const submitApplication = createServerFn({ method: "POST" })
     if (insErr) return { ok: false, message: insErr.message };
 
     // Reflect the new application to every super admin via the in-app
-    // notification bell (see NotificationsBell in workspace-shell.tsx).
+    // notification bell (see NotificationsBell in workspace-shell.tsx), with
+    // the full submitted details inline so admins don't have to click through
+    // to see who applied and why.
     const { data: superAdmins } = await supabaseAdmin
       .from("user_roles")
       .select("user_id")
       .eq("role", "super_admin");
     if (superAdmins?.length) {
+      const lines = [
+        `Email: ${data.email}`,
+        data.phone && `Phone: ${data.phone}`,
+        data.college && `College: ${data.college}`,
+        data.city && `City: ${data.city}`,
+        `Department: ${data.department_applied.replace(/_/g, " ")}`,
+        data.skills?.length && `Skills: ${data.skills.join(", ")}`,
+        data.experience && `Experience: ${data.experience}`,
+        data.availability && `Availability: ${data.availability}`,
+        data.bio && `Bio: ${data.bio}`,
+        data.portfolio_url && `Portfolio: ${data.portfolio_url}`,
+        data.github_url && `GitHub: ${data.github_url}`,
+        data.linkedin_url && `LinkedIn: ${data.linkedin_url}`,
+        data.resume_url && `Resume: ${data.resume_url}`,
+      ].filter(Boolean);
+
       await supabaseAdmin.from("notifications").insert(
         superAdmins.map((row) => ({
           user_id: row.user_id,
-          title: "New application received",
-          message: `${data.full_name} applied for ${data.department_applied.replace(/_/g, " ")}.`,
+          title: `New application: ${data.full_name}`,
+          message: lines.join("\n"),
           type: "info",
           link: "/admin/applications",
         })),
