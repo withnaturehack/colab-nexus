@@ -107,7 +107,11 @@ function AuthPage() {
       toast.error(res.error.message ?? "Google sign-in failed");
       return;
     }
-    if (!res.redirected) navigate({ to: "/dashboard" });
+    if (!res.redirected) {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) await gateApprovedAndGo(data.user.id);
+    }
+
   };
 
   const handleForgot = async (e: React.FormEvent) => {
