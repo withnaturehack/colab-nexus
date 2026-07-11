@@ -15,6 +15,9 @@ import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    pending: (s.pending as string) ?? "",
+  }),
   head: () => ({
     meta: [
       { title: "Sign in · CoLab Nation Workspace" },
@@ -25,8 +28,11 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+
 function AuthPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+
   const [mode, setMode] = useState<"signin" | "forgot">("signin");
   const [loading, setLoading] = useState(false);
   const [seeding, setSeeding] = useState(false);
@@ -53,16 +59,35 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
+      if (data.user) gateApprovedAndGo(data.user.id);
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+  const gateApprovedAndGo = async (userId: string) => {
+    const [{ data: profile }, { data: roles }] = await Promise.all([
+      supabase.from("profiles").select("status").eq("id", userId).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+    ]);
+    const isSuperAdmin = (roles ?? []).some((r) => r.role === "super_admin");
+    const isActive = profile?.status === "active";
+    if (!isSuperAdmin && !isActive) {
+      await supabase.auth.signOut();
+      toast.error("Your account isn't approved yet. Sign-in is limited to approved members.");
+      return false;
+    }
+    toast.success("Welcome back");
+    navigate({ to: "/dashboard" });
+    return true;
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       if (/confirm|verify/i.test(error.message)) {
         toast.error("Please verify your email first");
         navigate({ to: "/verify-email", search: { email } });
@@ -71,9 +96,10 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    if (signIn.user) await gateApprovedAndGo(signIn.user.id);
+    setLoading(false);
   };
+
 
   const handleGoogle = async () => {
     const res = await lovable.auth.signInWithOAuth("google", {
@@ -83,7 +109,11 @@ function AuthPage() {
       toast.error(res.error.message ?? "Google sign-in failed");
       return;
     }
-    if (!res.redirected) navigate({ to: "/dashboard" });
+    if (!res.redirected) {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) await gateApprovedAndGo(data.user.id);
+    }
+
   };
 
   const handleForgot = async (e: React.FormEvent) => {
@@ -119,6 +149,12 @@ function AuthPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {search.pending === "1" && (
+                <div className="mb-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  Your account is awaiting approval. Sign-in is limited to approved members. You'll be notified once an admin reviews your application.
+                </div>
+              )}
+
               {mode === "signin" ? (
                 <Tabs defaultValue="password" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
@@ -178,11 +214,9 @@ function AuthPage() {
               )}
 
               <div className="mt-6 border-t border-border pt-4 text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link to="/register" className="text-primary hover:underline">
-                  Apply to join
-                </Link>
+                Sign-in is limited to approved CoLab Nation members. Applications are currently closed.
               </div>
+
               {typeof window !== "undefined" && new URLSearchParams(window.location.search).has("bootstrap") && (
                 <Button variant="ghost" size="sm" onClick={handleSeed} disabled={seeding} className="mt-2 w-full text-xs text-muted-foreground">
                   {seeding ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Crown className="mr-2 h-3 w-3" />}
