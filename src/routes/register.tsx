@@ -45,6 +45,7 @@ function RegisterPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const uploadDrive = useServerFn(uploadResumeToDrive);
+  const submitApp = useServerFn(submitApplication);
 
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
