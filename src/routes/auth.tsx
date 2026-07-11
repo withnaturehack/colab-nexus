@@ -149,6 +149,12 @@ function AuthPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {search.pending === "1" && (
+                <div className="mb-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  Your account is awaiting approval. Sign-in is limited to approved members. You'll be notified once an admin reviews your application.
+                </div>
+              )}
+
               {mode === "signin" ? (
                 <Tabs defaultValue="password" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
