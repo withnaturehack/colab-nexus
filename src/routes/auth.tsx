@@ -40,9 +40,9 @@ function AuthPage() {
       const res = await seedFn({});
       if (!res.ok) toast.error(res.message ?? "Seed failed");
       else {
-        toast.success("Super admin ready: colabnation@gmail.in / 54321");
+        toast.success("Super admin ready: colabnation@gmail.in / ColabNation@12345");
         setEmail("colabnation@gmail.in");
-        setPassword("54321");
+        setPassword("ColabNation@12345");
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Seed failed");
