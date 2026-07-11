@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, registrationSchema, type RegistrationInput } from "@/lib/workspace-schema";
-import { uploadResumeToDrive } from "@/lib/drive.functions";
+import { uploadResume } from "@/lib/resume.functions";
 import { submitApplication } from "@/lib/bootstrap.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,7 @@ function RegisterPage() {
   const [done, setDone] = useState(false);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const uploadDrive = useServerFn(uploadResumeToDrive);
+  const uploadResumeFn = useServerFn(uploadResume);
   const submitApp = useServerFn(submitApplication);
 
   const form = useForm<RegistrationInput>({
@@ -98,22 +98,23 @@ function RegisterPage() {
       return toast.error(signErr?.message ?? "Signup failed");
     }
 
-    // Upload resume to Drive if provided
+    // Upload resume to Supabase Storage if provided
     let resumeLink = data.resume_url || null;
     if (resumeFile) {
       try {
         setUploading(true);
         const buf = await resumeFile.arrayBuffer();
         const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-        const up = await uploadDrive({
+        const up = await uploadResumeFn({
           data: {
+            email: data.email,
             filename: resumeFile.name,
             mimeType: resumeFile.type || "application/octet-stream",
             contentBase64: b64,
           },
         });
         resumeLink = up.webViewLink;
-        toast.success("Resume uploaded to Drive");
+        toast.success("Resume uploaded");
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Resume upload failed — you can add a link instead");
       } finally {

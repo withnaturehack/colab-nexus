@@ -140,5 +140,24 @@ export const submitApplication = createServerFn({ method: "POST" })
       status: "pending",
     });
     if (insErr) return { ok: false, message: insErr.message };
+
+    // Reflect the new application to every super admin via the in-app
+    // notification bell (see NotificationsBell in workspace-shell.tsx).
+    const { data: superAdmins } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "super_admin");
+    if (superAdmins?.length) {
+      await supabaseAdmin.from("notifications").insert(
+        superAdmins.map((row) => ({
+          user_id: row.user_id,
+          title: "New application received",
+          message: `${data.full_name} applied for ${data.department_applied.replace(/_/g, " ")}.`,
+          type: "info",
+          link: "/admin/applications",
+        })),
+      );
+    }
+
     return { ok: true };
   });

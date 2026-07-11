@@ -18,3 +18,6 @@ CoLab Nation is a workspace/organization management app ("Recruitment, onboardin
 
 ## Notes
 - Minor dev-only hydration mismatch warnings appear in the browser console from Lovable's component-tagger dev plugin (`data-tsd-source` attributes); harmless in development.
+- Resume uploads (`src/lib/resume.functions.ts`) go to a private Supabase Storage bucket (`resumes`, added in `supabase/migrations/20260711060000_add_resumes_storage_bucket.sql`) instead of Google Drive via Lovable's connector gateway — the app no longer depends on Lovable Cloud for this. Uploads are public-reachable server functions (no auth middleware), same reasoning as `submitApplication`: right after signup there's no session yet since email confirmation is required.
+- When a new application is submitted, every `super_admin` gets an in-app notification (bell icon in `workspace-shell.tsx`) linking to `/admin/applications`. No email notification is sent (user's choice) — add one later via an email provider if wanted.
+- Known open issue: signups can hit Supabase's default `over_email_send_rate_limit` (very low cap on the built-in email sender) — deferred by user request. Fix later by configuring custom SMTP for this Supabase project (Dashboard → Authentication → Emails → SMTP Settings) with a provider like Resend.
