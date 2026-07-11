@@ -134,8 +134,17 @@ function AuthPage() {
               <CardTitle className="mt-4 font-display text-2xl">
                 {mode === "signin" ? "Welcome back" : "Reset your password"}
               </CardTitle>
-              <CardDescription>
-                {mode === "signin" ? "Sign in to your CoLab Nation workspace" : "We'll email you a reset link"}
+              <CardDescription className="text-center">
+                {mode === "signin" ? (
+                  <span>
+                    Sign in to your CoLab Nation workspace. Not a member?{" "}
+                    <Link to="/register" className="text-primary hover:underline font-semibold">
+                      Apply here
+                    </Link>
+                  </span>
+                ) : (
+                  "We'll email you a reset link"
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -176,9 +185,14 @@ function AuthPage() {
                     <p className="text-sm text-muted-foreground text-center">
                       Sign in with your Google account. You'll need admin approval before accessing the workspace.
                     </p>
-                    <Button type="button" variant="outline" className="w-full" onClick={handleGoogle}>
-                      Continue with Google
-                    </Button>
+                    <div className="relative pt-1.5">
+                      <Button type="button" variant="outline" className="w-full opacity-50 cursor-not-allowed" disabled>
+                        Continue with Google
+                      </Button>
+                      <span className="absolute -top-1.5 right-2 bg-primary/20 text-primary text-[9px] px-2 py-0.5 rounded-full border border-primary/30 font-semibold font-display shadow-glow">
+                        Coming Soon
+                      </span>
+                    </div>
                   </TabsContent>
                 </Tabs>
               ) : (
