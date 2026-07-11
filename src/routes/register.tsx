@@ -6,7 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, registrationSchema, type RegistrationInput } from "@/lib/workspace-schema";
 import { uploadResumeToDrive } from "@/lib/drive.functions";
-import { submitApplication } from "@/lib/register.functions";
+import { submitApplication } from "@/lib/bootstrap.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +45,7 @@ function RegisterPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const uploadDrive = useServerFn(uploadResumeToDrive);
-  const submitAppFn = useServerFn(submitApplication);
+  const submitApp = useServerFn(submitApplication);
 
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
@@ -126,11 +126,10 @@ function RegisterPage() {
       : [];
 
     try {
-      await submitAppFn({
+      const res = await submitApp({
         data: {
-          userId: signUp.user.id,
-          full_name: data.full_name,
           email: data.email,
+          full_name: data.full_name,
           phone: data.phone || null,
           college: data.college || null,
           city: data.city || null,
@@ -143,15 +142,16 @@ function RegisterPage() {
           bio: data.bio || null,
           experience: data.experience || null,
           availability: data.availability || null,
+          agreed_terms: true,
         },
       });
+      setSubmitting(false);
+      if (!res.ok) return toast.error(res.message ?? "Could not submit application");
+      setDone(true);
     } catch (e) {
       setSubmitting(false);
-      return toast.error(e instanceof Error ? e.message : "Failed to submit application");
+      return toast.error(e instanceof Error ? e.message : "Could not submit application");
     }
-
-    setSubmitting(false);
-    setDone(true);
   };
 
   if (done) {
