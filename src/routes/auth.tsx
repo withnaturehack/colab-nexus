@@ -40,9 +40,9 @@ function AuthPage() {
       const res = await seedFn({});
       if (!res.ok) toast.error(res.message ?? "Seed failed");
       else {
-        toast.success("Super admin ready: colabnation@gmail.in / 54321");
+        toast.success("Super admin ready: colabnation@gmail.in / ColabNation@12345");
         setEmail("colabnation@gmail.in");
-        setPassword("54321");
+        setPassword("ColabNation@12345");
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Seed failed");
@@ -60,9 +60,13 @@ function AuthPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    console.log("[v0] Starting sign-in with:", email);
+    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
     if (error) {
+      setLoading(false);
+      console.log("[v0] Sign-in error:", error.message);
       if (/confirm|verify/i.test(error.message)) {
         toast.error("Please verify your email first");
         navigate({ to: "/verify-email", search: { email } });
@@ -71,6 +75,22 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
+    
+    console.log("[v0] Sign-in successful, session:", data.session?.access_token ? "exists" : "missing");
+    
+    // Wait a bit for session to be stored and then verify
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      setLoading(false);
+      console.log("[v0] Session verification failed");
+      toast.error("Session verification failed, please try again");
+      return;
+    }
+    
+    setLoading(false);
+    console.log("[v0] Session verified, navigating to dashboard");
     toast.success("Welcome back");
     navigate({ to: "/dashboard" });
   };

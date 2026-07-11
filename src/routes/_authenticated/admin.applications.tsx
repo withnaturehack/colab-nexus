@@ -71,11 +71,16 @@ function ApplicationsPage() {
   const { data: apps, isLoading } = useQuery({
     queryKey: ["applications", "list"],
     queryFn: async () => {
+      console.log("[v0] Fetching applications from admin view");
       const { data, error } = await supabase
         .from("applications")
         .select("*")
         .order("created_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("[v0] Error fetching applications:", error);
+        throw error;
+      }
+      console.log("[v0] Applications loaded:", data?.length || 0, "total");
       return data as Application[];
     },
   });

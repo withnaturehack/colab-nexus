@@ -8,7 +8,7 @@ export const seedSuperAdmin = createServerFn({ method: "POST" }).handler(async (
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   const email = "colabnation@gmail.in";
-  const password = "54321";
+  const password = "ColabNation@12345"; // Meets Supabase requirements (8+ chars)
   const fullName = "CoLab Nation Admin";
 
   // Look for an existing user with this email

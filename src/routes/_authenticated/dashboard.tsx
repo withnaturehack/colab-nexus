@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DEPT_LABEL, STATUS_LABEL } from "@/lib/workspace-schema";
-import { AlertCircle, ClipboardList, Users, Briefcase, Clock, Sparkles, Crown } from "lucide-react";
+import { AlertCircle, ClipboardList, Users, Briefcase, Clock, Sparkles, Crown, Calendar, Target, Zap, TrendingUp } from "lucide-react";
 import { claimSuperAdmin } from "@/lib/admin.functions";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
@@ -37,6 +38,9 @@ function DashboardPage() {
         <RejectedNotice />
       ) : (
         <div className="space-y-6 animate-fade-in">
+          {/* Deadline Banner */}
+          <DeadlineCard />
+
           {/* Stat row */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard icon={ClipboardList} label="Today's tasks" value="0" hint="Nothing due today" />
@@ -162,6 +166,86 @@ function StatCard({ icon: Icon, label, value, hint }: { icon: React.ComponentTyp
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary">
             <Icon className="h-4 w-4" />
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DeadlineCard() {
+  const [daysLeft, setDaysLeft] = useState(0);
+  const deadlineDate = new Date(2026, 6, 13); // July 13, 2026
+
+  useEffect(() => {
+    const today = new Date();
+    const diff = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    setDaysLeft(Math.max(0, diff));
+  }, []);
+
+  const isUrgent = daysLeft <= 3;
+  const isExpired = daysLeft === 0;
+
+  return (
+    <Card className={`border-2 overflow-hidden ${isExpired ? 'border-destructive bg-destructive/5' : isUrgent ? 'border-warning bg-warning/5' : 'border-primary bg-primary/5'} shadow-lg`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`grid h-10 w-10 place-items-center rounded-lg ${isExpired ? 'bg-destructive/20 text-destructive' : isUrgent ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'}`}>
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Application Deadline</CardTitle>
+              <CardDescription className="text-xs">July 13, 2026</CardDescription>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className={`font-display text-3xl font-bold ${isExpired ? 'text-destructive' : isUrgent ? 'text-warning' : 'text-primary'}`}>
+              {daysLeft}
+            </div>
+            <div className="text-xs text-muted-foreground">{daysLeft === 1 ? 'day' : 'days'} left</div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {isExpired ? (
+            <div className="flex items-center gap-2 text-sm text-destructive font-medium">
+              <AlertCircle className="h-4 w-4" />
+              Applications are now closed!
+            </div>
+          ) : isUrgent ? (
+            <div className="flex items-center gap-2 text-sm text-warning font-medium">
+              <Zap className="h-4 w-4" />
+              Hurry! Apply before the deadline closes.
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-primary font-medium">
+              <Target className="h-4 w-4" />
+              Make sure to submit your application before the deadline.
+            </div>
+          )}
+          
+          {/* Progress bar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Application Progress</span>
+              <span>{100 - Math.round((daysLeft / 365) * 100)}% complete</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all ${isExpired ? 'bg-destructive' : isUrgent ? 'bg-warning' : 'bg-primary'}`}
+                style={{ width: `${100 - Math.round((daysLeft / 365) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <Button 
+            className="w-full mt-3" 
+            variant={isUrgent ? "default" : "outline"}
+          >
+            <TrendingUp className="mr-2 h-4 w-4" />
+            {isExpired ? "Applications Closed" : "Submit Application"}
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -64,7 +64,7 @@ function RegisterPage() {
       skills: "",
       bio: "",
       experience: "",
-      availability: "",
+      availability: "Flexible",
       agreed_terms: false as unknown as true,
     },
   });
@@ -76,20 +76,35 @@ function RegisterPage() {
       0: ["full_name", "email", "password"],
       1: ["phone", "college", "city"],
       2: ["department_applied"],
-      3: ["portfolio_url", "github_url", "linkedin_url", "resume_url", "skills", "bio", "experience", "availability"],
+      3: ["portfolio_url", "skills", "bio", "experience", "availability"],
     };
     const valid = await form.trigger(fields[step]);
-    if (valid) setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    console.log("[v0] Step", step, "validation:", valid, "Fields:", fields[step]);
+    if (valid) {
+      setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    } else {
+      toast.error("Please fill in all required fields");
+    }
   };
 
   const onSubmit = async (data: RegistrationInput) => {
+    console.log("[v0] Form submitted with data:", data);
     setSubmitting(true);
+
+    // Validate all required fields are present
+    if (!data.full_name || !data.email || !data.password || !data.phone || !data.college || !data.city || !data.skills || !data.bio || !data.experience || !data.availability) {
+      setSubmitting(false);
+      console.log("[v0] Validation failed: missing required fields");
+      toast.error("Please fill in all required fields");
+      return;
+    }
 
     // Upload resume to Supabase Storage if provided
     let resumeLink = data.resume_url || null;
     if (resumeFile) {
       try {
         setUploading(true);
+        console.log("[v0] Uploading resume:", resumeFile.name);
         const buf = await resumeFile.arrayBuffer();
         const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
         const up = await uploadResumeFn({
@@ -101,8 +116,10 @@ function RegisterPage() {
           },
         });
         resumeLink = up.webViewLink;
+        console.log("[v0] Resume uploaded successfully");
         toast.success("Resume uploaded");
       } catch (e) {
+        console.error("[v0] Resume upload error:", e);
         toast.error(e instanceof Error ? e.message : "Resume upload failed — you can add a link instead");
       } finally {
         setUploading(false);
@@ -114,31 +131,38 @@ function RegisterPage() {
       : [];
 
     try {
+      console.log("[v0] Submitting application with skills:", skillsArr);
       const res = await submitApp({
         data: {
           email: data.email,
           password: data.password,
           full_name: data.full_name,
-          phone: data.phone || null,
-          college: data.college || null,
-          city: data.city || null,
+          phone: data.phone,
+          college: data.college,
+          city: data.city,
           department_applied: data.department_applied,
-          portfolio_url: data.portfolio_url || null,
+          portfolio_url: data.portfolio_url,
           github_url: data.github_url || null,
           linkedin_url: data.linkedin_url || null,
           resume_url: resumeLink,
           skills: skillsArr,
-          bio: data.bio || null,
-          experience: data.experience || null,
-          availability: data.availability || null,
+          bio: data.bio,
+          experience: data.experience,
+          availability: data.availability,
           agreed_terms: true,
         },
       });
       setSubmitting(false);
-      if (!res.ok) return toast.error(res.message ?? "Could not submit application");
+      console.log("[v0] Application response:", res);
+      if (!res.ok) {
+        console.error("[v0] Application submission failed:", res.message);
+        return toast.error(res.message ?? "Could not submit application");
+      }
+      console.log("[v0] Application submitted successfully");
       setDone(true);
     } catch (e) {
       setSubmitting(false);
+      console.error("[v0] Application error:", e);
       return toast.error(e instanceof Error ? e.message : "Could not submit application");
     }
   };
@@ -201,9 +225,9 @@ function RegisterPage() {
               )}
               {step === 1 && (
                 <div className="space-y-4 animate-fade-in">
-                  <Field label="Phone (optional)"><Input {...form.register("phone")} placeholder="+91…" /></Field>
-                  <Field label="College / Organization"><Input {...form.register("college")} /></Field>
-                  <Field label="City"><Input {...form.register("city")} /></Field>
+                  <Field label="Phone" error={form.formState.errors.phone?.message}><Input {...form.register("phone")} placeholder="+91…" /></Field>
+                  <Field label="College / Organization" error={form.formState.errors.college?.message}><Input {...form.register("college")} placeholder="Your institution" /></Field>
+                  <Field label="City" error={form.formState.errors.city?.message}><Input {...form.register("city")} placeholder="Your city" /></Field>
                 </div>
               )}
               {step === 2 && (
@@ -223,11 +247,15 @@ function RegisterPage() {
               {step === 3 && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Portfolio URL"><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
-                    <Field label="GitHub URL"><Input {...form.register("github_url")} placeholder="https://github.com/…" /></Field>
-                    <Field label="LinkedIn URL"><Input {...form.register("linkedin_url")} placeholder="https://linkedin.com/…" /></Field>
-                    <Field label="Resume URL (or upload below)"><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
+                    <Field label="Portfolio URL" error={form.formState.errors.portfolio_url?.message}><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
+                    <Field label="GitHub URL (optional)" error={form.formState.errors.github_url?.message}><Input {...form.register("github_url")} placeholder="https://github.com/…" /></Field>
+                    <Field label="LinkedIn URL (optional)" error={form.formState.errors.linkedin_url?.message}><Input {...form.register("linkedin_url")} placeholder="https://linkedin.com/…" /></Field>
+                    <Field label="Resume URL (optional)" error={form.formState.errors.resume_url?.message}><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
                   </div>
+                  <Field label="Skills (comma-separated)" error={form.formState.errors.skills?.message}><Textarea {...form.register("skills")} placeholder="e.g., React, Node.js, UI Design" className="h-20" /></Field>
+                  <Field label="Tell us about yourself" error={form.formState.errors.bio?.message}><Textarea {...form.register("bio")} placeholder="Your background and interests…" className="h-24" /></Field>
+                  <Field label="Experience & Projects" error={form.formState.errors.experience?.message}><Textarea {...form.register("experience")} placeholder="What projects have you worked on?" className="h-24" /></Field>
+                  <Field label="Your availability" error={form.formState.errors.availability?.message}><Input {...form.register("availability")} placeholder="e.g., Flexible, Weekends only, etc." /></Field>
                   <Field label="Upload resume (PDF/DOC · optional)">
                     <label className="group relative flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border bg-surface/50 px-4 py-3 text-sm hover:border-primary/50 transition">
                       <input
@@ -250,10 +278,6 @@ function RegisterPage() {
                       )}
                     </label>
                   </Field>
-                  <Field label="Skills (comma separated)"><Input {...form.register("skills")} placeholder="React, Figma, Marketing…" /></Field>
-                  <Field label="Short bio"><Textarea rows={3} {...form.register("bio")} /></Field>
-                  <Field label="Experience"><Textarea rows={3} {...form.register("experience")} /></Field>
-                  <Field label="Availability"><Input {...form.register("availability")} placeholder="10 hrs / week" /></Field>
                 </div>
               )}
               {step === 4 && (
