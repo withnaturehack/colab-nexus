@@ -185,5 +185,71 @@ function MemberRow({ profile, roles }: { profile: Profile; roles: AppRole[] }) {
   );
 }
 
+function CreateAccountCard() {
+  const qc = useQueryClient();
+  const create = useServerFn(createUserAccount);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<AppRole>("member");
+  const [dept, setDept] = useState<Department | "">("");
+
+  const mut = useMutation({
+    mutationFn: () =>
+      create({
+        data: {
+          email,
+          password,
+          full_name: fullName,
+          role,
+          department: dept || undefined,
+        },
+      }),
+    onSuccess: () => {
+      toast.success(`Account created for ${email}`);
+      setEmail(""); setPassword(""); setFullName(""); setRole("member"); setDept("");
+      qc.invalidateQueries({ queryKey: ["team"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const canSubmit = email.trim() && password.length >= 8 && fullName.trim().length >= 2;
+
+  return (
+    <Card className="surface-1">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 font-display">
+          <UserPlus className="h-5 w-5 text-primary" /> Create account
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 sm:grid-cols-2">
+        <Input placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+        <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input type="password" placeholder="Password (min 8 chars)" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
+          <SelectTrigger><SelectValue placeholder="Role" /></SelectTrigger>
+          <SelectContent>
+            {APP_ROLES.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={dept || "__none"} onValueChange={(v) => setDept(v === "__none" ? "" : (v as Department))}>
+          <SelectTrigger><SelectValue placeholder="Department (optional)" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none">No department</SelectItem>
+            {DEPARTMENTS.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <div className="sm:col-span-2 flex justify-end">
+          <Button onClick={() => mut.mutate()} disabled={!canSubmit || mut.isPending}>
+            {mut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+            Create account
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+
 // Prevent unused import warnings
 void ShieldOff;
