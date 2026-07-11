@@ -108,6 +108,10 @@ function TeamPage() {
           </CardContent>
         </Card>
 
+        <CreateAccountCard />
+
+
+
         <Card className="surface-1">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-display">All members</CardTitle>
