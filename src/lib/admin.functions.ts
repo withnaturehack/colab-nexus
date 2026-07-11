@@ -47,7 +47,7 @@ function getSupa(): SupaLike { throw new Error("type-only"); }
 
 export const approveApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => approveInput.parse(raw))
+  .validator((raw: unknown) => approveInput.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -120,7 +120,7 @@ export const approveApplication = createServerFn({ method: "POST" })
 
 export const rejectApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => rejectInput.parse(raw))
+  .validator((raw: unknown) => rejectInput.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -174,7 +174,7 @@ export const rejectApplication = createServerFn({ method: "POST" })
 
 export const updateApplicationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => updateStatusInput.parse(raw))
+  .validator((raw: unknown) => updateStatusInput.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: app } = await supabase

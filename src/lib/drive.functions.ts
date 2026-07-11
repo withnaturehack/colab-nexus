@@ -48,7 +48,7 @@ const uploadInput = z.object({
 
 export const uploadResumeToDrive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => uploadInput.parse(raw))
+  .validator((raw: unknown) => uploadInput.parse(raw))
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const folderId = await ensureApplicantsFolder();

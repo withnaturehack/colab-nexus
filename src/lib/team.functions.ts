@@ -23,7 +23,7 @@ async function requireSuperAdmin(supabase: any, userId: string) {
 
 export const grantRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => roleInput.parse(raw))
+  .validator((raw: unknown) => roleInput.parse(raw))
   .handler(async ({ data, context }) => {
     await requireSuperAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -43,7 +43,7 @@ export const grantRole = createServerFn({ method: "POST" })
 
 export const revokeRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => roleInput.parse(raw))
+  .validator((raw: unknown) => roleInput.parse(raw))
   .handler(async ({ data, context }) => {
     await requireSuperAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

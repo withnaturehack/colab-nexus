@@ -26,7 +26,7 @@ const submitApplicationInput = z.object({
  * inside a client-side insert, causing the RLS policy to block it.
  */
 export const submitApplication = createServerFn({ method: "POST" })
-  .inputValidator((raw: unknown) => submitApplicationInput.parse(raw))
+  .validator((raw: unknown) => submitApplicationInput.parse(raw))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

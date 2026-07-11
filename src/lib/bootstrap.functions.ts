@@ -61,7 +61,7 @@ export const seedSuperAdmin = createServerFn({ method: "POST" }).handler(async (
 const resendInput = z.object({ email: z.string().email() });
 
 export const resendVerificationEmail = createServerFn({ method: "POST" })
-  .inputValidator((raw: unknown) => resendInput.parse(raw))
+  .validator((raw: unknown) => resendInput.parse(raw))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.resend({
