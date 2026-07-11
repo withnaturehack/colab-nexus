@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Loader2, CheckCircle2, Upload, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, CheckCircle2, Upload, FileText, Clock, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -45,6 +45,36 @@ function RegisterPage() {
   const [uploading, setUploading] = useState(false);
   const uploadResumeFn = useServerFn(uploadResume);
   const submitApp = useServerFn(submitApplication);
+
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const deadline = new Date("2026-07-13T23:59:59").getTime();
+    const now = new Date().getTime();
+    const diff = deadline - now;
+    return diff > 0 ? diff : 0;
+  });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const deadline = new Date("2026-07-13T23:59:59").getTime();
+      const now = new Date().getTime();
+      const diff = deadline - now;
+      setTimeLeft(diff > 0 ? diff : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    if (ms <= 0) return "Closed";
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((ms % (1000 * 60)) / 1000);
+    
+    if (days > 0) {
+      return `${days}d ${hours}h ${mins}m`;
+    }
+    return `${hours}h ${mins}m ${secs}s`;
+  };
 
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
@@ -196,6 +226,34 @@ function RegisterPage() {
         <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back
         </Link>
+
+        {/* Deadline Alert Banner */}
+        <div className="mb-6 glass rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between border-warning/20 shadow-glow relative overflow-hidden animate-fade-in gap-4">
+          <div className="absolute inset-0 bg-warning/5 opacity-30 pointer-events-none" />
+          <div className="flex items-start sm:items-center gap-3 relative z-10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-display font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
+                Application Deadline: <span className="text-warning">July 13th, 2026</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-warning"></span>
+                </span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Complete and submit your registration before the cutoff date to join.
+              </p>
+            </div>
+          </div>
+          <div className="w-full sm:w-auto text-left sm:text-right shrink-0 relative z-10 border-t border-border/50 sm:border-0 pt-3 sm:pt-0 flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground block">Closing In</span>
+            <span className="text-sm font-semibold text-warning font-display flex items-center gap-1.5 bg-warning/10 px-2.5 py-1 rounded-lg">
+              <Clock className="h-3.5 w-3.5" /> {formatTime(timeLeft)}
+            </span>
+          </div>
+        </div>
 
         <Card className="glass shadow-elegant animate-fade-in">
           <CardHeader>
