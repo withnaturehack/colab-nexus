@@ -125,29 +125,33 @@ function RegisterPage() {
       ? data.skills.split(",").map((s) => s.trim()).filter(Boolean)
       : [];
 
-    const { error: appErr } = await supabase.from("applications").insert({
-      user_id: signUp.user.id,
-      full_name: data.full_name,
-      email: data.email,
-      phone: data.phone || null,
-      college: data.college || null,
-      city: data.city || null,
-      department_applied: data.department_applied,
-      portfolio_url: data.portfolio_url || null,
-      github_url: data.github_url || null,
-      linkedin_url: data.linkedin_url || null,
-      resume_url: resumeLink,
-      skills: skillsArr,
-      bio: data.bio || null,
-      experience: data.experience || null,
-      availability: data.availability || null,
-      agreed_terms: true,
-      status: "pending",
-    });
-
-    setSubmitting(false);
-    if (appErr) return toast.error(appErr.message);
-    setDone(true);
+    try {
+      const res = await submitApp({
+        data: {
+          email: data.email,
+          full_name: data.full_name,
+          phone: data.phone || null,
+          college: data.college || null,
+          city: data.city || null,
+          department_applied: data.department_applied,
+          portfolio_url: data.portfolio_url || null,
+          github_url: data.github_url || null,
+          linkedin_url: data.linkedin_url || null,
+          resume_url: resumeLink,
+          skills: skillsArr,
+          bio: data.bio || null,
+          experience: data.experience || null,
+          availability: data.availability || null,
+          agreed_terms: true,
+        },
+      });
+      setSubmitting(false);
+      if (!res.ok) return toast.error(res.message ?? "Could not submit application");
+      setDone(true);
+    } catch (e) {
+      setSubmitting(false);
+      return toast.error(e instanceof Error ? e.message : "Could not submit application");
+    }
   };
 
   if (done) {
