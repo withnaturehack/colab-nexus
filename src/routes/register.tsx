@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, registrationSchema, type RegistrationInput } from "@/lib/workspace-schema";
 import { uploadResumeToDrive } from "@/lib/drive.functions";
+import { submitApplication } from "@/lib/register.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +45,7 @@ function RegisterPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const uploadDrive = useServerFn(uploadResumeToDrive);
+  const submitAppFn = useServerFn(submitApplication);
 
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
@@ -123,28 +125,32 @@ function RegisterPage() {
       ? data.skills.split(",").map((s) => s.trim()).filter(Boolean)
       : [];
 
-    const { error: appErr } = await supabase.from("applications").insert({
-      user_id: signUp.user.id,
-      full_name: data.full_name,
-      email: data.email,
-      phone: data.phone || null,
-      college: data.college || null,
-      city: data.city || null,
-      department_applied: data.department_applied,
-      portfolio_url: data.portfolio_url || null,
-      github_url: data.github_url || null,
-      linkedin_url: data.linkedin_url || null,
-      resume_url: resumeLink,
-      skills: skillsArr,
-      bio: data.bio || null,
-      experience: data.experience || null,
-      availability: data.availability || null,
-      agreed_terms: true,
-      status: "pending",
-    });
+    try {
+      await submitAppFn({
+        data: {
+          userId: signUp.user.id,
+          full_name: data.full_name,
+          email: data.email,
+          phone: data.phone || null,
+          college: data.college || null,
+          city: data.city || null,
+          department_applied: data.department_applied,
+          portfolio_url: data.portfolio_url || null,
+          github_url: data.github_url || null,
+          linkedin_url: data.linkedin_url || null,
+          resume_url: resumeLink,
+          skills: skillsArr,
+          bio: data.bio || null,
+          experience: data.experience || null,
+          availability: data.availability || null,
+        },
+      });
+    } catch (e) {
+      setSubmitting(false);
+      return toast.error(e instanceof Error ? e.message : "Failed to submit application");
+    }
 
     setSubmitting(false);
-    if (appErr) return toast.error(appErr.message);
     setDone(true);
   };
 
