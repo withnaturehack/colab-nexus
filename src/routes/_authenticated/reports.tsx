@@ -33,7 +33,16 @@ function ReportsPage() {
     { key: "kn", label: "Articles", icon: BookOpen, q: count("knowledge_articles") },
   ];
 
-  const results = stats.map((s) => useQuery({ queryKey: ["report", s.key], queryFn: s.q }));
+  const r0 = useQuery({ queryKey: ["report", stats[0].key], queryFn: stats[0].q });
+  const r1 = useQuery({ queryKey: ["report", stats[1].key], queryFn: stats[1].q });
+  const r2 = useQuery({ queryKey: ["report", stats[2].key], queryFn: stats[2].q });
+  const r3 = useQuery({ queryKey: ["report", stats[3].key], queryFn: stats[3].q });
+  const r4 = useQuery({ queryKey: ["report", stats[4].key], queryFn: stats[4].q });
+  const r5 = useQuery({ queryKey: ["report", stats[5].key], queryFn: stats[5].q });
+  const r6 = useQuery({ queryKey: ["report", stats[6].key], queryFn: stats[6].q });
+  const r7 = useQuery({ queryKey: ["report", stats[7].key], queryFn: stats[7].q });
+  const r8 = useQuery({ queryKey: ["report", stats[8].key], queryFn: stats[8].q });
+  const results = [r0, r1, r2, r3, r4, r5, r6, r7, r8];
 
   const { data: byDept = [] } = useQuery({
     queryKey: ["report", "by-dept"],
