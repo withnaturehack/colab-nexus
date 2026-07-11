@@ -15,6 +15,9 @@ import { BrandLogo } from "@/components/brand-logo";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    pending: (s.pending as string) ?? "",
+  }),
   head: () => ({
     meta: [
       { title: "Sign in · CoLab Nation Workspace" },
@@ -24,6 +27,7 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
 
 function AuthPage() {
   const navigate = useNavigate();
