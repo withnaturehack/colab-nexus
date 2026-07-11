@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { DEPARTMENTS, registrationSchema, type RegistrationInput } from "@/lib/workspace-schema";
 import { uploadResume } from "@/lib/resume.functions";
 import { submitApplication } from "@/lib/bootstrap.functions";
@@ -85,18 +84,6 @@ function RegisterPage() {
 
   const onSubmit = async (data: RegistrationInput) => {
     setSubmitting(true);
-    const { data: signUp, error: signErr } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        emailRedirectTo: window.location.origin + "/verify-email?email=" + encodeURIComponent(data.email),
-        data: { full_name: data.full_name },
-      },
-    });
-    if (signErr || !signUp.user) {
-      setSubmitting(false);
-      return toast.error(signErr?.message ?? "Signup failed");
-    }
 
     // Upload resume to Supabase Storage if provided
     let resumeLink = data.resume_url || null;
@@ -130,6 +117,7 @@ function RegisterPage() {
       const res = await submitApp({
         data: {
           email: data.email,
+          password: data.password,
           full_name: data.full_name,
           phone: data.phone || null,
           college: data.college || null,
@@ -165,14 +153,11 @@ function RegisterPage() {
             </div>
             <CardTitle className="mt-4 font-display text-2xl">Application received</CardTitle>
             <CardDescription>
-              Check your inbox — we've sent a verification link. After verifying, admins will review your application and activate your workspace.
+              Your account is ready — no email verification needed. Our team will review your application and notify you once it's approved.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button onClick={() => navigate({ to: "/verify-email", search: { email: form.getValues("email") } })} className="w-full shadow-glow">
-              Verify email
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: "/auth" })} className="w-full">
+            <Button onClick={() => navigate({ to: "/auth" })} className="w-full shadow-glow">
               Go to sign in
             </Button>
           </CardContent>
@@ -260,7 +245,7 @@ function RegisterPage() {
                       ) : (
                         <>
                           <Upload className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Click to upload — will be saved to our Drive</span>
+                          <span className="text-muted-foreground">Click to upload — saved securely to our storage</span>
                         </>
                       )}
                     </label>

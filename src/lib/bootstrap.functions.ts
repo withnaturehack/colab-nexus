@@ -74,6 +74,7 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
 
 const applicationInput = z.object({
   email: z.string().email(),
+  password: z.string().min(8).max(72),
   full_name: z.string().min(1),
   phone: z.string().nullable().optional(),
   college: z.string().nullable().optional(),
@@ -90,16 +91,17 @@ const applicationInput = z.object({
   agreed_terms: z.literal(true),
 });
 
-// Public: creates the application row after client-side signUp. Since email
-// confirmation is required, the just-signed-up user has no session yet, so a
-// direct client insert (RLS: authenticated + user_id = auth.uid()) 401s.
-// We look the user up by email via admin and insert on their behalf.
+// Public: creates the applicant's account (server-side, admin API, pre-confirmed —
+// no confirmation email sent, so this never hits Supabase's email rate limit)
+// and the application row in one step. The applicant can sign in immediately;
+// admins review and approve/reject from the applications dashboard.
 export const submitApplication = createServerFn({ method: "POST" })
   .validator((raw: unknown) => applicationInput.parse(raw))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Find the auth user by email (paginate defensively)
+    // Find an existing auth user by email (paginate defensively) — lets someone
+    // safely resubmit/retry without erroring on "already registered".
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let user: any = null;
     for (let page = 1; page <= 10 && !user; page++) {
@@ -110,7 +112,19 @@ export const submitApplication = createServerFn({ method: "POST" })
       user = list?.users?.find((u: any) => (u.email ?? "").toLowerCase() === data.email.toLowerCase());
       if (!list?.users?.length || list.users.length < 200) break;
     }
-    if (!user) return { ok: false, message: "Account not found. Please sign up again." };
+
+    if (!user) {
+      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email: data.email,
+        password: data.password,
+        email_confirm: true,
+        user_metadata: { full_name: data.full_name },
+      });
+      if (createErr || !created.user) {
+        return { ok: false, message: createErr?.message ?? "Could not create account" };
+      }
+      user = created.user;
+    }
 
     // Skip if this user already has an application
     const { data: existing } = await supabaseAdmin
