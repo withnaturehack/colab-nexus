@@ -61,12 +61,29 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  const gateApprovedAndGo = async (userId: string) => {
+    const [{ data: profile }, { data: roles }] = await Promise.all([
+      supabase.from("profiles").select("status").eq("id", userId).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+    ]);
+    const isSuperAdmin = (roles ?? []).some((r) => r.role === "super_admin");
+    const isActive = profile?.status === "active";
+    if (!isSuperAdmin && !isActive) {
+      await supabase.auth.signOut();
+      toast.error("Your account isn't approved yet. Sign-in is limited to approved members.");
+      return false;
+    }
+    toast.success("Welcome back");
+    navigate({ to: "/dashboard" });
+    return true;
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       if (/confirm|verify/i.test(error.message)) {
         toast.error("Please verify your email first");
         navigate({ to: "/verify-email", search: { email } });
@@ -75,9 +92,10 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    if (signIn.user) await gateApprovedAndGo(signIn.user.id);
+    setLoading(false);
   };
+
 
   const handleGoogle = async () => {
     const res = await lovable.auth.signInWithOAuth("google", {
