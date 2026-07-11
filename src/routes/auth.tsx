@@ -57,9 +57,11 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
+      if (data.user) gateApprovedAndGo(data.user.id);
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const gateApprovedAndGo = async (userId: string) => {
     const [{ data: profile }, { data: roles }] = await Promise.all([
