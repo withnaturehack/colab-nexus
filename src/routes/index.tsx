@@ -122,7 +122,8 @@ function Landing() {
         </div>
 
         <p className="mt-6 text-xs text-muted-foreground">
-          New signups are reviewed by an admin before workspace access is granted.
+          New signups are reviewed by an admin before workspace access is granted.<br />
+          <span className="text-primary mt-1 inline-block">💡 No portfolio or extra stuffs required — just share your experience!</span>
         </p>
       </section>
 
