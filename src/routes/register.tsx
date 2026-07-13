@@ -47,7 +47,7 @@ function RegisterPage() {
   const submitApp = useServerFn(submitApplication);
 
   const [timeLeft, setTimeLeft] = useState(() => {
-    const deadline = new Date("2026-07-13T23:59:59").getTime();
+    const deadline = new Date("2026-07-19T23:59:59").getTime();
     const now = new Date().getTime();
     const diff = deadline - now;
     return diff > 0 ? diff : 0;
@@ -55,7 +55,7 @@ function RegisterPage() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const deadline = new Date("2026-07-13T23:59:59").getTime();
+      const deadline = new Date("2026-07-19T23:59:59").getTime();
       const now = new Date().getTime();
       const diff = deadline - now;
       setTimeLeft(diff > 0 ? diff : 0);
@@ -236,7 +236,7 @@ function RegisterPage() {
             </div>
             <div>
               <p className="font-display font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
-                Application Deadline: <span className="text-warning">July 13th, 2026</span>
+                Application Deadline: <span className="text-warning">July 19th, 2026</span>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-warning"></span>
@@ -304,6 +304,9 @@ function RegisterPage() {
               )}
               {step === 3 && (
                 <div className="space-y-4 animate-fade-in">
+                  <div className="text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border">
+                    💡 Just share your things, no portfolio and other extra stuffs required!
+                  </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Portfolio URL (optional)" error={form.formState.errors.portfolio_url?.message}><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
                     <Field label="GitHub URL (optional)" error={form.formState.errors.github_url?.message}><Input {...form.register("github_url")} placeholder="https://github.com/…" /></Field>

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const [timeLeft, setTimeLeft] = useState(() => {
-    const deadline = new Date("2026-07-13T23:59:59").getTime();
+    const deadline = new Date("2026-07-19T23:59:59").getTime();
     const now = new Date().getTime();
     const diff = deadline - now;
     return diff > 0 ? diff : 0;
@@ -18,7 +18,7 @@ function Landing() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const deadline = new Date("2026-07-13T23:59:59").getTime();
+      const deadline = new Date("2026-07-19T23:59:59").getTime();
       const now = new Date().getTime();
       const diff = deadline - now;
       setTimeLeft(diff > 0 ? diff : 0);
@@ -49,7 +49,7 @@ function Landing() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-warning"></span>
           </span>
-          Applications close on <strong className="font-semibold text-foreground">July 13th, 2026</strong>. 
+          Applications close on <strong className="font-semibold text-foreground">July 19th, 2026</strong>. 
           <span className="text-muted-foreground">Closing in:</span>
           <span className="bg-warning/20 px-2 py-0.5 rounded text-foreground font-semibold font-display inline-flex items-center gap-1">
             <Clock className="h-3 w-3 text-warning" /> {formatTime(timeLeft)}

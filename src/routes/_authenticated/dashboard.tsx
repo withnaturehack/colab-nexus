@@ -174,7 +174,7 @@ function StatCard({ icon: Icon, label, value, hint }: { icon: React.ComponentTyp
 
 function DeadlineCard() {
   const [daysLeft, setDaysLeft] = useState(0);
-  const deadlineDate = new Date(2026, 6, 13); // July 13, 2026
+  const deadlineDate = new Date(2026, 6, 19); // July 19, 2026
 
   useEffect(() => {
     const today = new Date();
@@ -195,7 +195,7 @@ function DeadlineCard() {
             </div>
             <div>
               <CardTitle className="text-lg">Application Deadline</CardTitle>
-              <CardDescription className="text-xs">July 13, 2026</CardDescription>
+              <CardDescription className="text-xs">July 19, 2026</CardDescription>
             </div>
           </div>
           <div className="text-right">
