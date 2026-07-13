@@ -122,7 +122,7 @@ function RegisterPage() {
     setSubmitting(true);
 
     // Validate all required fields are present
-    if (!data.full_name || !data.email || !data.password || !data.phone || !data.college || !data.city || !data.skills || !data.bio || !data.experience || !data.availability) {
+    if (!data.full_name || !data.email || !data.password || !data.phone || !data.college || !data.city) {
       setSubmitting(false);
       console.log("[v0] Validation failed: missing required fields");
       toast.error("Please fill in all required fields");
@@ -305,15 +305,15 @@ function RegisterPage() {
               {step === 3 && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="Portfolio URL" error={form.formState.errors.portfolio_url?.message}><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
+                    <Field label="Portfolio URL (optional)" error={form.formState.errors.portfolio_url?.message}><Input {...form.register("portfolio_url")} placeholder="https://…" /></Field>
                     <Field label="GitHub URL (optional)" error={form.formState.errors.github_url?.message}><Input {...form.register("github_url")} placeholder="https://github.com/…" /></Field>
                     <Field label="LinkedIn URL (optional)" error={form.formState.errors.linkedin_url?.message}><Input {...form.register("linkedin_url")} placeholder="https://linkedin.com/…" /></Field>
                     <Field label="Resume URL (optional)" error={form.formState.errors.resume_url?.message}><Input {...form.register("resume_url")} placeholder="Link to PDF" /></Field>
                   </div>
-                  <Field label="Skills (comma-separated)" error={form.formState.errors.skills?.message}><Textarea {...form.register("skills")} placeholder="e.g., React, Node.js, UI Design" className="h-20" /></Field>
-                  <Field label="Tell us about yourself" error={form.formState.errors.bio?.message}><Textarea {...form.register("bio")} placeholder="Your background and interests…" className="h-24" /></Field>
-                  <Field label="Experience & Projects" error={form.formState.errors.experience?.message}><Textarea {...form.register("experience")} placeholder="What projects have you worked on?" className="h-24" /></Field>
-                  <Field label="Your availability" error={form.formState.errors.availability?.message}><Input {...form.register("availability")} placeholder="e.g., Flexible, Weekends only, etc." /></Field>
+                  <Field label="Skills (comma-separated · optional)" error={form.formState.errors.skills?.message}><Textarea {...form.register("skills")} placeholder="e.g., React, Node.js, UI Design" className="h-20" /></Field>
+                  <Field label="Tell us about yourself (optional)" error={form.formState.errors.bio?.message}><Textarea {...form.register("bio")} placeholder="Your background and interests…" className="h-24" /></Field>
+                  <Field label="Experience & Projects (optional)" error={form.formState.errors.experience?.message}><Textarea {...form.register("experience")} placeholder="What projects have you worked on?" className="h-24" /></Field>
+                  <Field label="Your availability (optional)" error={form.formState.errors.availability?.message}><Input {...form.register("availability")} placeholder="e.g., Flexible, Weekends only, etc." /></Field>
                   <Field label="Upload resume (PDF/DOC · optional)">
                     <label className="group relative flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-border bg-surface/50 px-4 py-3 text-sm hover:border-primary/50 transition">
                       <input
